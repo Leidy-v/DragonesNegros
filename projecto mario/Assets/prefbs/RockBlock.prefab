@@ -132,7 +132,7 @@ MonoBehaviour:
   pausaArriba: 1
   sueloLayer:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 0
   tagJugador: Player
   reiniciarEscena: 0
   destruirJugador: 1
