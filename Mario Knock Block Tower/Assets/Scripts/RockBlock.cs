@@ -1,5 +1,4 @@
-using UnityEngine;
-using System.Collections;
+﻿using UnityEngine;
 
 public class RockBlock : MonoBehaviour
 {
@@ -7,11 +6,9 @@ public class RockBlock : MonoBehaviour
     public float alturaMovimiento = 2f;
     public float velocidadBajada = 6f;
     public float velocidadSubida = 4f;
-    public float pausaAbajo = 0.5f;
-    public float pausaArriba = 1f;
 
-    [Header("Detecci�n del suelo")]
-    public LayerMask sueloLayer; 
+    [Header("Detección del suelo")]
+    public LayerMask sueloLayer; // Incluye "Ground"
 
     [Header("Jugador")]
     public string tagJugador = "Player";
@@ -19,8 +16,6 @@ public class RockBlock : MonoBehaviour
     public bool destruirJugador = true;
 
     private Vector3 posicionInicial;
-    private bool bajando = true;
-    private bool enPausa = false;
     private bool tieneSoporte = true;
 
     void Start()
@@ -30,31 +25,30 @@ public class RockBlock : MonoBehaviour
 
     void Update()
     {
-        if (enPausa) return;
+        if (RockBlockManager.instancia == null) return;
 
         if (!tieneSoporte)
         {
-            
             transform.Translate(Vector3.down * velocidadBajada * Time.deltaTime);
 
             LayerMask sueloCompleto = sueloLayer | LayerMask.GetMask("RockResting");
 
             if (Physics.Raycast(transform.position, Vector3.down, 0.6f, sueloCompleto))
             {
-                enPausa = true;
-                gameObject.layer = LayerMask.NameToLayer("RockResting"); 
+                gameObject.layer = LayerMask.NameToLayer("RockResting");
+                enabled = false; // ← Se convierte en plataforma estática
             }
 
             return;
         }
 
-        if (bajando)
+        if (RockBlockManager.instancia.bajandoGlobal)
         {
             transform.Translate(Vector3.down * velocidadBajada * Time.deltaTime);
 
-            if (Physics.Raycast(transform.position, Vector3.down, 0.6f, LayerMask.GetMask("Enemy")))
+            if (transform.position.y <= posicionInicial.y)
             {
-                StartCoroutine(PausarYSubir(pausaAbajo));
+                transform.position = posicionInicial;
             }
         }
         else
@@ -63,14 +57,13 @@ public class RockBlock : MonoBehaviour
 
             if (transform.position.y >= posicionInicial.y + alturaMovimiento)
             {
-                StartCoroutine(PausarYBajar(pausaArriba));
+                transform.position = new Vector3(transform.position.x, posicionInicial.y + alturaMovimiento, transform.position.z);
             }
         }
     }
 
     void FixedUpdate()
     {
-        
         if (transform.position.y <= posicionInicial.y + 0.2f)
         {
             RaycastHit hit;
@@ -82,22 +75,6 @@ public class RockBlock : MonoBehaviour
 
             tieneSoporte = false;
         }
-    }
-
-    IEnumerator PausarYSubir(float tiempo)
-    {
-        enPausa = true;
-        yield return new WaitForSeconds(tiempo);
-        bajando = false;
-        enPausa = false;
-    }
-
-    IEnumerator PausarYBajar(float tiempo)
-    {
-        enPausa = true;
-        yield return new WaitForSeconds(tiempo);
-        bajando = true;
-        enPausa = false;
     }
 
     void OnCollisionEnter(Collision collision)

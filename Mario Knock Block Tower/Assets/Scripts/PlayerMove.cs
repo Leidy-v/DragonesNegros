@@ -71,12 +71,22 @@ public class PlayerMove : MonoBehaviour
         {
             canAttack = false;
 
-            Collider[] hitEnemies = Physics.OverlapSphere(transform.position + transform.forward * attackRange, attackRadius, enemyLayer);
+            Vector3 attackOrigin = transform.position + transform.forward * attackRange;
+            Collider[] hitObjects = Physics.OverlapSphere(attackOrigin, attackRadius, enemyLayer);
 
-            foreach (Collider enemy in hitEnemies)
+            foreach (Collider obj in hitObjects)
             {
-                Debug.Log("Golpeaste a: " + enemy.name);
-                Destroy(enemy.gameObject);
+                Debug.Log("Golpeaste a: " + obj.name);
+
+                CoinChest chest = obj.GetComponent<CoinChest>();
+                if (chest != null)
+                {
+                    chest.OpenChest(); // Si es un cofre, se abre
+                }
+                else
+                {
+                    Destroy(obj.gameObject); // Si es enemigo, se destruye
+                }
             }
 
             Invoke(nameof(ResetAttack), attackCooldown);
@@ -91,6 +101,7 @@ public class PlayerMove : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position + transform.forward * attackRange, attackRadius);
+        Vector3 attackOrigin = transform.position + transform.forward * attackRange;
+        Gizmos.DrawWireSphere(attackOrigin, attackRadius);
     }
 }
