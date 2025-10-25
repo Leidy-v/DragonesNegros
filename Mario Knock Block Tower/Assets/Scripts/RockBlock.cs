@@ -33,7 +33,7 @@ public class RockBlock : MonoBehaviour
 
             LayerMask sueloCompleto = sueloLayer | LayerMask.GetMask("RockResting");
 
-            if (Physics.Raycast(transform.position, Vector3.down, 0.6f, sueloCompleto))
+            if (Physics.Raycast(transform.position, Vector3.down, 0.1f, sueloCompleto))
             {
                 gameObject.layer = LayerMask.NameToLayer("RockResting");
                 enabled = false; // ← Se convierte en plataforma estática
@@ -67,7 +67,7 @@ public class RockBlock : MonoBehaviour
         if (transform.position.y <= posicionInicial.y + 0.2f)
         {
             RaycastHit hit;
-            if (Physics.Raycast(transform.position, Vector3.down, out hit, 2f, LayerMask.GetMask("Enemy")))
+            if (Physics.Raycast(transform.position, Vector3.down, out hit, 5f, LayerMask.GetMask("Enemy")))
             {
                 tieneSoporte = true;
                 return;
