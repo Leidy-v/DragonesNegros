@@ -15,6 +15,8 @@ public class Coin : MonoBehaviour
     private Rigidbody rb;
     private bool attracted = false;
 
+    private AudioManager audioManager;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -42,8 +44,19 @@ public class Coin : MonoBehaviour
             player = playerObj.transform;
         }
 
-        // ❌ Eliminado: no se destruye por tiempo
+        //L_Buscar AudioManager y reproducir sonido
+        audioManager = Object.FindFirstObjectByType<AudioManager>();
+        if (audioManager != null && audioManager.coinSound != null)
+        {
+            audioManager.PlaySFX(audioManager.coinSound);
+        }
+        else
+        {
+            Debug.LogWarning("AudioManager o clip de moneda no asignado.");
+        }
     }
+
+
 
     void FixedUpdate()
     {

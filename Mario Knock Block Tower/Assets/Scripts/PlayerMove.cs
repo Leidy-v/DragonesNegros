@@ -21,10 +21,18 @@ public class PlayerMove : MonoBehaviour
     bool canAttack = true;
     Transform cam;
 
+    private AudioManager audioManager;
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
         cam = Camera.main.transform;
+
+        audioManager = Object.FindFirstObjectByType<AudioManager>();
+        if (audioManager == null)
+        {
+            Debug.LogWarning("No se encontró AudioManager en la escena");
+        }
     }
 
     void Update()
@@ -46,6 +54,13 @@ public class PlayerMove : MonoBehaviour
         {
             Quaternion rot = Quaternion.LookRotation(move);
             transform.rotation = Quaternion.Slerp(transform.rotation, rot, rotationSpeed * Time.deltaTime);
+
+            //L_Reproducir sonido de caminar solo si está en el suelo
+            if (controller.isGrounded && audioManager != null && audioManager.walk != null && !audioManager.SFXSource.isPlaying)
+            {
+                audioManager.PlaySFX(audioManager.walk);
+            }
+
         }
 
         controller.Move(move.normalized * speed * Time.deltaTime);
@@ -55,6 +70,7 @@ public class PlayerMove : MonoBehaviour
 
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+
     }
 
     void Saltar()
@@ -62,6 +78,16 @@ public class PlayerMove : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && controller.isGrounded)
         {
             velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
+
+            //L_Reproducir sonido de salto
+            if (audioManager != null && audioManager.jump != null)
+            {
+                audioManager.PlaySFX(audioManager.jump);
+            }
+            else
+            {
+                Debug.LogWarning("No hay clip de salto asignado");
+            }
         }
     }
 
