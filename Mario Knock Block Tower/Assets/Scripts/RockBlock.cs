@@ -2,90 +2,113 @@
 
 public class RockBlock : MonoBehaviour
 {
-    [Header("Movimiento vertical")]
-    public float alturaMovimiento = 2f;
-    public float velocidadBajada = 6f;
-    public float velocidadSubida = 4f;
+    [Header("Vertical Movement Settings")]
+    public float moveHeight = 2f;         // Maximum height the block moves upward
+    public float fallSpeed = 6f;          // Speed when moving downward
+    public float riseSpeed = 4f;          // Speed when moving upward
 
-    [Header("Detección del suelo")]
-    public LayerMask sueloLayer; // Incluye "Ground"
+    [Header("Ground Detection")]
+    public LayerMask groundLayer;         // Layer mask used to detect ground ("Ground" layer must be included)
 
-    [Header("Jugador")]
-    public string tagJugador = "Player";
-    public bool reiniciarEscena = false;
-    public bool destruirJugador = true;
+    [Header("Player Settings")]
+    public string playerTag = "Player";   // Tag used to identify the player object
+    public bool restartScene = false;     // If true, the scene will reload when the player is crushed
+    public bool destroyPlayer = true;     // If true, destroys the player on collision
 
-    private Vector3 posicionInicial;
-    private bool tieneSoporte = true;
+    private Vector3 initialPosition;      // Stores the starting position of the block
+    private bool hasSupport = true;       // Determines whether the block is supported from below
 
     void Start()
     {
-        posicionInicial = transform.position;
+        // Save the initial position for movement reference
+        initialPosition = transform.position;
     }
 
     void Update()
     {
+        // Prevent logic execution if the global RockBlockManager is missing
         if (RockBlockManager.instancia == null) return;
 
-        if (!tieneSoporte)
+        // If the block has no support, it will fall continuously until it finds ground
+        if (!hasSupport)
         {
-            transform.Translate(Vector3.down * velocidadBajada * Time.deltaTime);
+            transform.Translate(Vector3.down * fallSpeed * Time.deltaTime);
 
-            LayerMask sueloCompleto = sueloLayer | LayerMask.GetMask("RockResting");
+            // Combine the ground layer and the resting block layer
+            LayerMask fullGround = groundLayer | LayerMask.GetMask("RockResting");
 
-            if (Physics.Raycast(transform.position, Vector3.down, 0.1f, sueloCompleto))
+            // Check if the block is touching any valid ground
+            if (Physics.Raycast(transform.position, Vector3.down, 0.1f, fullGround))
             {
-                gameObject.layer = LayerMask.NameToLayer("RockResting");
-                enabled = false; // ← Se convierte en plataforma estática
+                gameObject.layer = LayerMask.NameToLayer("RockResting"); // Change layer to resting
+                enabled = false; // Disable the script to make the block static
             }
 
             return;
         }
 
+        // Controlled up and down motion managed globally by RockBlockManager
         if (RockBlockManager.instancia.bajandoGlobal)
         {
-            transform.Translate(Vector3.down * velocidadBajada * Time.deltaTime);
+            // Move block downward
+            transform.Translate(Vector3.down * fallSpeed * Time.deltaTime);
 
-            if (transform.position.y <= posicionInicial.y)
+            // Stop block at its initial Y position
+            if (transform.position.y <= initialPosition.y)
             {
-                transform.position = posicionInicial;
+                transform.position = initialPosition;
             }
         }
         else
         {
-            transform.Translate(Vector3.up * velocidadSubida * Time.deltaTime);
+            // Move block upward
+            transform.Translate(Vector3.up * riseSpeed * Time.deltaTime);
 
-            if (transform.position.y >= posicionInicial.y + alturaMovimiento)
+            // Limit upward movement to the configured height
+            if (transform.position.y >= initialPosition.y + moveHeight)
             {
-                transform.position = new Vector3(transform.position.x, posicionInicial.y + alturaMovimiento, transform.position.z);
+                transform.position = new Vector3(
+                    transform.position.x,
+                    initialPosition.y + moveHeight,
+                    transform.position.z
+                );
             }
         }
     }
 
     void FixedUpdate()
     {
-        if (transform.position.y <= posicionInicial.y + 0.2f)
+        // Only check for support when near the starting height
+        if (transform.position.y <= initialPosition.y + 0.2f)
         {
             RaycastHit hit;
+
+            // Cast a ray downward to check if an enemy is under the block
             if (Physics.Raycast(transform.position, Vector3.down, out hit, 5f, LayerMask.GetMask("Enemy")))
             {
-                tieneSoporte = true;
+                hasSupport = true; // There is support below
                 return;
             }
 
-            tieneSoporte = false;
+            // No support detected below the block
+            hasSupport = false;
         }
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag(tagJugador))
+        // When the block collides with the player
+        if (collision.gameObject.CompareTag(playerTag))
         {
-            if (destruirJugador)
+            // Destroy the player object
+            if (destroyPlayer)
                 Destroy(collision.gameObject);
 
-            if (reiniciarEscena)
-                UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+            // Restart the scene if configured
+            if (restartScene)
+            {
+                FindFirstObjectByType<UIManager>().ShowGameOverPanel();
+            }
         }
     }
 }
