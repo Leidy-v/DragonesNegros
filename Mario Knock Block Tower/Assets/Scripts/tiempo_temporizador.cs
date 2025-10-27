@@ -1,62 +1,129 @@
 using UnityEngine;
-using TMPro; // 1. NECESITAS ESTA LIBRERÍA PARA USAR TextMeshPro
+using TMPro;
+using System.Collections;
 
-public class tiempo_temporizador : MonoBehaviour
+public class Tiempo_temporizador : MonoBehaviour
 {
-    // 2. Variables públicas visibles en el Inspector de Unity
-    [Tooltip("Tiempo inicial en segundos (300 segundos = 5 minutos)")]
-    public float TimeRemaining = 300f; //
-    
-    // Campo para conectar el componente de texto desde el Inspector
-    [Tooltip("Arrastra el objeto 'Temporizador' aquí desde la Jerarquía")]
-    public TextMeshProUGUI TimerText; //
+    [Header("Configuración")]
+    public float TimeRemaining = 10f;
+    public TextMeshProUGUI TimerText;
+    [Tooltip("Cuánto más arriba se posicionan los números respecto al centro (anchoredPosition Y).")]
+    public float numberYOffset = 600f;
 
-    // Variable privada para detener el temporizador
-    private bool timerIsRunning = true; 
+    [Header("Mensajes de Estado")]
+    public string startMessage = "START";
+    public string winMessage = "FINISH";
+    public string lossMessage = "GAME OVER";
+
+    public enum GameState { START, RUNNING, FINISH, GAME_OVER }
+    public GameState currentState = GameState.START;
+    private RectTransform timerRect;
+    private Vector2 centerPosition;
+    private Vector2 topPosition;
 
     void Start()
     {
-        // Asegúrate de que el temporizador comience a correr al inicio
-        timerIsRunning = true;
+        if (TimerText == null)
+        {
+            Debug.LogError("[Tiempo_temporizador] TimerText no está asignado en el Inspector.");
+            enabled = false;
+            return;
+        }
+
+        timerRect = TimerText.GetComponent<RectTransform>();
+        centerPosition = timerRect.anchoredPosition;
+        topPosition = new Vector2(centerPosition.x, centerPosition.y + numberYOffset);
+        StartCoroutine(StartCountdownSequence());
+    }
+
+    IEnumerator StartCountdownSequence()
+    {
+        TimerText.text = startMessage;
+        TimerText.fontSize = 220;
+        timerRect.anchoredPosition = centerPosition;
+        currentState = GameState.START;
+
+        yield return new WaitForSeconds(1.5f);
+
+        float elapsed = 0f;
+        float duration = 0.9f;
+        Vector2 initialPos = centerPosition;
+        float startSize = 220f;
+        float endSize = 110f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
+            timerRect.anchoredPosition = Vector2.Lerp(initialPos, topPosition, t);
+            TimerText.fontSize = Mathf.Lerp(startSize, endSize, t);
+            yield return null;
+        }
+
+        timerRect.anchoredPosition = topPosition;
+        TimerText.fontSize = endSize;
+        currentState = GameState.RUNNING;
+        DisplayTime(TimeRemaining);
     }
 
     void Update()
     {
-        if (timerIsRunning)
+        if (currentState == GameState.RUNNING)
         {
             if (TimeRemaining > 0)
             {
-                // Disminuye el tiempo restante con el tiempo real transcurrido
-                TimeRemaining -= Time.deltaTime; 
-                // Llama a la función para actualizar el texto en pantalla
-                DisplayTime(TimeRemaining); 
+                TimeRemaining -= Time.deltaTime;
+                DisplayTime(TimeRemaining);
             }
             else
             {
-                // El tiempo ha terminado
-                Debug.Log("¡El tiempo ha terminado!");
                 TimeRemaining = 0;
-                timerIsRunning = false;
-                // Aquí podrías agregar código para terminar el juego o la ronda
+                currentState = GameState.GAME_OVER;
+                StartCoroutine(ShowFinishOrGameOver(lossMessage));
             }
         }
     }
 
-    // Función para convertir los segundos a formato de minutos:segundos y actualizar la UI
-    void DisplayTime(float timeToDisplay)
+    public void PlayerWins()
     {
-        // Asegura que el tiempo no sea negativo
-        if (timeToDisplay < 0)
+        if (currentState == GameState.RUNNING)
         {
-            timeToDisplay = 0;
+            currentState = GameState.FINISH;
+            StartCoroutine(ShowFinishOrGameOver(winMessage));
+        }
+    }
+
+    IEnumerator ShowFinishOrGameOver(string message)
+    {
+        TimerText.text = message;
+
+        float elapsed = 0f;
+        float duration = 0.8f;
+        Vector2 initialPos = timerRect.anchoredPosition;
+        float startSize = TimerText.fontSize;
+        float endSize = 300f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
+            timerRect.anchoredPosition = Vector2.Lerp(initialPos, centerPosition, t);
+            TimerText.fontSize = Mathf.Lerp(startSize, endSize, t);
+            yield return null;
         }
 
-        // 3. Cálculo de minutos y segundos
-        float minutes = Mathf.FloorToInt(timeToDisplay / 60);  // Minutos
-        float seconds = Mathf.FloorToInt(timeToDisplay % 60);  // Segundos restantes
+        timerRect.anchoredPosition = centerPosition;
+        TimerText.fontSize = endSize;
+    }
 
-        // 4. Formato y actualización
-        // El formato "00" asegura que siempre tenga dos dígitos (Ej: 05 en lugar de 5)
-        TimerText.text = string.Format("{0:00}:{1:00}", minutes, seconds); //
+    void DisplayTime(float timeToDisplay)
+    {
+        if (timeToDisplay < 0f)
+            timeToDisplay = 0f;
+
+        int seconds = Mathf.CeilToInt(timeToDisplay);
+        TimerText.text = seconds.ToString();
+        if (currentState == GameState.RUNNING)
+            timerRect.anchoredPosition = topPosition;
     }
 }
