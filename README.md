@@ -26,7 +26,7 @@ Controles del jugador:
 
 - **Diego Alexander López Rodríguez** – Programador principal  
 - **Camilo Andrés Gutiérrez Jiménez** – Diseño de entorno  
-- **Leidy Karina Buitrago Vanegas** – Sonido y ambientación  
+- **Leidy Karina Buitrago Vanegas** – desarrolladora de sistemas de sonido y ambientación  
 - **Luis Enrique López Bohórquez** – Interfaz de usuario (UI)  
 - **Yeison Humberto Sandoval Sánchez** – Animaciones  
 
