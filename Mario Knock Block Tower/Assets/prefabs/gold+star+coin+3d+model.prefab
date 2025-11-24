@@ -173,8 +173,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Coin
   jumpForce: 2
   lateralSpread: 0.3
-  magnetRange: 5
-  magnetForce: 15
+  magnetRange: 10
+  magnetForce: 20
   maxMagnetSpeed: 10
 --- !u!54 &8947710998942607371
 Rigidbody:

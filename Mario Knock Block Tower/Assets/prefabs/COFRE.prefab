@@ -4986,7 +4986,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CoinChest
   coinPrefab: {fileID: 5517285458688634391, guid: 181610f83a697e4448a7cd34ccb209c7, type: 3}
   spawnPoint: {fileID: 7056801610772501944}
-  coinCount: 10
-  spawnDelay: 0.1
+  coinCount: 5
+  spawnDelay: 0.2
   sparkleEffect: {fileID: 0}
   openSound: {fileID: 0}

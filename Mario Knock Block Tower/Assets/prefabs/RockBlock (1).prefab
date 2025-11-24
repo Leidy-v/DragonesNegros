@@ -152,12 +152,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48b0ce0ca1a94e344b5c6cad0efe6935, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RockBlock
-  alturaMovimiento: 2
-  velocidadBajada: 6
-  velocidadSubida: 4
-  sueloLayer:
+  moveHeight: 2
+  fallSpeed: 6
+  riseSpeed: 4
+  groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  tagJugador: Player
-  reiniciarEscena: 0
-  destruirJugador: 1
+  playerTag: Player
+  restartScene: 0
+  destroyPlayer: 1
