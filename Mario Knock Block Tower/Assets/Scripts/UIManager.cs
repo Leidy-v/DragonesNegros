@@ -11,8 +11,12 @@ public class UIManager : MonoBehaviour
     public GameObject gameOverPanel;
     public GameObject timerPanel;
 
+    [Header("Timer Number Sprites")]
+    public UnityEngine.UI.Image numberImage;   // Reference to object Image
+    public Sprite[] numberSprites;             // sprites 0 to 10
+
     [Header("Timer Settings")]
-    public TextMeshProUGUI timerText;   // Reference to text that displays the countdown
+    //public TextMeshProUGUI timerText;   // Reference to text that displays the countdown
     public float gameDuration = 10f;    // Total time allowed for the player
 
     [Header("Timing Settings")]
@@ -74,18 +78,19 @@ public class UIManager : MonoBehaviour
 
     private void UpdateTimerUI()
     {
-        if (timerText == null) return;
-
         int seconds = Mathf.CeilToInt(remainingTime);
-        timerText.text = seconds.ToString();
 
-        // Change color based on remaining time
+        // Evitar errores si se pasa
+        seconds = Mathf.Clamp(seconds, 0, numberSprites.Length - 1);
+
+        // Change sprite
+        numberImage.sprite = numberSprites[seconds];
+
+        // Change number color
         if (seconds <= 3)
-            timerText.color = Color.red;
-        else if (seconds <= 5)
-            timerText.color = Color.yellow;
+            numberImage.color = Color.red;
         else
-            timerText.color = Color.white;
+            numberImage.color = Color.white;
     }
 
     // Called when all coins are collected
