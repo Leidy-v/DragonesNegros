@@ -18,7 +18,8 @@ Objetivo: Recolectar la mayor cantidad de monedas posibles evitando ser aplastad
 Controles del jugador:
 - Moverse: W, A, S, D  
 - Saltar: Espacio  
-- Atacar: Z (golpea cofres o bloques para liberar monedas)   
+- Atacar: Z (golpea cofres o bloques para liberar monedas)
+- Pausar: ESC 
 
 ---
 
