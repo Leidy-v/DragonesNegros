@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour
     public GameObject finishPanel;
     public GameObject gameOverPanel;
     public GameObject timerPanel;
+    public GameObject pausePanel; //Pause Menu Panel
 
     [Header("Timer Number Sprites")]
     public UnityEngine.UI.Image numberImage;   // Reference to object Image
@@ -24,6 +25,7 @@ public class UIManager : MonoBehaviour
     public float restartDelay = 2f;       // Delay before restarting after Game Over
 
     private bool gameStarted = false;
+    private bool isPaused = false;
     private float remainingTime;
 
     private AudioManager audioManager; // Reference to AudioManager
@@ -44,6 +46,16 @@ public class UIManager : MonoBehaviour
 
         // Begin showing the START panel, then automatically start the game
         StartCoroutine(StartPanelRoutine());
+    }
+
+    void Update()
+    {
+        // Press ESC to toggle pause menu
+        if (gameStarted && Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (!isPaused) PauseGame();
+            else ResumeGame();
+        }
     }
 
     private IEnumerator StartPanelRoutine()
@@ -133,7 +145,24 @@ public class UIManager : MonoBehaviour
         yield return new WaitForSecondsRealtime(restartDelay);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
+
+    //Pause sistem
+    public void PauseGame()
+    {
+        isPaused = true;
+        pausePanel.SetActive(true);
+        Time.timeScale = 0f;
+    }
+
+    public void ResumeGame()
+    {
+        Debug.Log("RESUME button pressed");
+        isPaused = false;
+        pausePanel.SetActive(false);
+        Time.timeScale = 1f;
+    }
 }
+
 
 
 
